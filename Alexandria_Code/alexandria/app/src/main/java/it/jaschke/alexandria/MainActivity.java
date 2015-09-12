@@ -12,10 +12,14 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
+
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 
 import it.jaschke.alexandria.api.Callback;
 
@@ -178,5 +182,11 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
         super.onBackPressed();
     }
 
-
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        IntentResult scanningResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
+        if (scanningResult != null) {
+            Log.d("barcode_result", "Barcode scanned successfully");
+        }
+    }
 }
