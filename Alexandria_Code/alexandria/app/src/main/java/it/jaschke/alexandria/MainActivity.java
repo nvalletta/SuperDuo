@@ -17,9 +17,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import com.google.zxing.integration.android.IntentIntegrator;
-import com.google.zxing.integration.android.IntentResult;
-
 import it.jaschke.alexandria.api.Callback;
 
 
@@ -80,7 +77,6 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
             case 2:
                 nextFragment = new AboutAlexandriaFragment();
                 break;
-
         }
 
         fragmentManager.beginTransaction()
@@ -95,7 +91,6 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
 
     public void restoreActionBar() {
         ActionBar actionBar = getSupportActionBar();
-        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
         actionBar.setDisplayShowTitleEnabled(true);
         actionBar.setTitle(title);
     }
