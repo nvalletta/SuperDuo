@@ -38,6 +38,8 @@ public class BookService extends IntentService {
 
     public static final String EAN = "it.jaschke.alexandria.services.extra.EAN";
 
+    private boolean hasEncounteredAnError = false;
+
     public BookService() {
         super("Alexandria");
     }
@@ -53,7 +55,16 @@ public class BookService extends IntentService {
                 final String ean = intent.getStringExtra(EAN);
                 deleteBook(ean);
             }
+            if (hasEncounteredAnError) {
+                broadcastError();
+            }
         }
+    }
+
+    private void broadcastError() {
+        Intent messageIntent = new Intent(MainActivity.MESSAGE_EVENT);
+        messageIntent.putExtra(MainActivity.MESSAGE_KEY,getResources().getString(R.string.not_found));
+        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(messageIntent);
     }
 
     /**
@@ -66,16 +77,7 @@ public class BookService extends IntentService {
         }
     }
 
-    /**
-     * Handle action fetchBook in the provided background thread with the provided
-     * parameters.
-     */
-    private void fetchBook(String ean) {
-
-        if(ean.length()!=13){
-            return;
-        }
-
+    private void queryForExistingBook(String ean) {
         Cursor bookEntry = getContentResolver().query(
                 AlexandriaContract.BookEntry.buildBookUri(Long.parseLong(ean)),
                 null, // leaving "columns" null just returns all the columns.
@@ -90,22 +92,37 @@ public class BookService extends IntentService {
         }
 
         bookEntry.close();
+    }
+
+    private Uri getBuiltUri(String ean) {
+        final String FORECAST_BASE_URL = "https://www.googleapis.com/books/v1/volumes?";
+        final String QUERY_PARAM = "q";
+
+        final String ISBN_PARAM = "isbn:" + ean;
+
+        return Uri.parse(FORECAST_BASE_URL).buildUpon()
+                .appendQueryParameter(QUERY_PARAM, ISBN_PARAM)
+                .build();
+    }
+
+    /**
+     * Handle action fetchBook in the provided background thread with the provided
+     * parameters.
+     */
+    private void fetchBook(String ean) {
+
+        if(ean.length()!=13){
+            return;
+        }
+
+        queryForExistingBook(ean);
 
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
         String bookJsonString = null;
 
         try {
-            final String FORECAST_BASE_URL = "https://www.googleapis.com/books/v1/volumes?";
-            final String QUERY_PARAM = "q";
-
-            final String ISBN_PARAM = "isbn:" + ean;
-
-            Uri builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
-                    .appendQueryParameter(QUERY_PARAM, ISBN_PARAM)
-                    .build();
-
-            URL url = new URL(builtUri.toString());
+            URL url = new URL(getBuiltUri(ean).toString());
 
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestMethod("GET");
@@ -141,7 +158,6 @@ public class BookService extends IntentService {
                     Log.e(LOG_TAG, "Error closing stream", e);
                 }
             }
-
         }
 
         final String ITEMS = "items";
@@ -156,15 +172,18 @@ public class BookService extends IntentService {
         final String IMG_URL_PATH = "imageLinks";
         final String IMG_URL = "thumbnail";
 
+        if (null == bookJsonString) {
+            this.hasEncounteredAnError = true;
+            return;
+        }
+
         try {
             JSONObject bookJson = new JSONObject(bookJsonString);
             JSONArray bookArray;
             if(bookJson.has(ITEMS)){
                 bookArray = bookJson.getJSONArray(ITEMS);
             }else{
-                Intent messageIntent = new Intent(MainActivity.MESSAGE_EVENT);
-                messageIntent.putExtra(MainActivity.MESSAGE_KEY,getResources().getString(R.string.not_found));
-                LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(messageIntent);
+                broadcastError();
                 return;
             }
 
