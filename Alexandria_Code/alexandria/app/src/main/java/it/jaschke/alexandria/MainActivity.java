@@ -17,6 +17,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
+
 import it.jaschke.alexandria.api.Callback;
 
 
@@ -57,7 +60,7 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
 
         // Set up the drawer.
         navigationDrawerFragment.setUp(R.id.navigation_drawer,
-                    (DrawerLayout) findViewById(R.id.drawer_layout));
+                (DrawerLayout) findViewById(R.id.drawer_layout));
     }
 
     @Override
@@ -69,13 +72,13 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
         switch (position){
             default:
             case 0:
-                nextFragment = new ListOfBooks();
+                nextFragment = new ListOfBooksFragment();
                 break;
             case 1:
-                nextFragment = new AddBook();
+                nextFragment = new AddBookFragment();
                 break;
             case 2:
-                nextFragment = new About();
+                nextFragment = new AboutAlexandriaFragment();
                 break;
 
         }
@@ -135,9 +138,9 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
     @Override
     public void onItemSelected(String ean) {
         Bundle args = new Bundle();
-        args.putString(BookDetail.EAN_KEY, ean);
+        args.putString(BookDetailFragment.EAN_KEY, ean);
 
-        BookDetail fragment = new BookDetail();
+        BookDetailFragment fragment = new BookDetailFragment();
         fragment.setArguments(args);
 
         int id = R.id.container;
