@@ -65,8 +65,12 @@ public class AddBookFragment extends Fragment implements LoaderManager.LoaderCal
             public void afterTextChanged(Editable s) {
                 String ean = s.toString();
                 //catch isbn10 numbers
-                if (ean.length() == 10 && !ean.startsWith("978")) {
-                    ean = "978" + ean;
+                if (null == getActivity()) {
+                    return;
+                }
+                String startSequence = getActivity().getString(R.string.isbn_start_sequence);
+                if (ean.length() == 10 && !ean.startsWith(startSequence)) {
+                    ean = startSequence + ean;
                 }
                 if (ean.length() < 13) {
                     clearFields();
@@ -125,9 +129,11 @@ public class AddBookFragment extends Fragment implements LoaderManager.LoaderCal
         if(isbnEditText.getText().length()==0){
             return null;
         }
+
+        String startSequence = getActivity().getString(R.string.isbn_start_sequence);
         String eanStr= isbnEditText.getText().toString();
-        if(eanStr.length()==10 && !eanStr.startsWith("978")){
-            eanStr="978"+eanStr;
+        if(eanStr.length()==10 && !eanStr.startsWith(startSequence)){
+            eanStr=startSequence+eanStr;
         }
         return new CursorLoader(
                 getActivity(),
