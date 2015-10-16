@@ -7,4 +7,11 @@
     <dimen name="TeamNames">17sp</dimen>
     <dimen name="Score">30sp</dimen>
     <dimen name="League">15sp</dimen>
+    <dimen name="lengthwise_button_padding">120dp</dimen>
+    <dimen name="small_text_size">12sp</dimen>
+    <dimen name="medium_text_size">15sp</dimen>
+    <dimen name="small_spacing">4dp</dimen>
+    <dimen name="moderate_top_margin">20dp</dimen>
+    <dimen name="zero_dp">0dp</dimen>
+    <dimen name="small_top_padding">5dp</dimen>
 </resources>
