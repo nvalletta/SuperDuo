@@ -4,11 +4,12 @@ import android.annotation.TargetApi;
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
 import barqsoft.footballscores.R;
-import barqsoft.footballscores.ScoresAdapter;
 import barqsoft.footballscores.service.MyFetchService;
 
 /**
@@ -18,12 +19,14 @@ import barqsoft.footballscores.service.MyFetchService;
 public class FootballViewFactory implements RemoteViewsService.RemoteViewsFactory {
 
     private Context mContext;
+    private Cursor mCursor;
     private int mAppWidgetId;
 
-    public FootballViewFactory(Context context, Intent intent){
+    public FootballViewFactory(Context context, Intent intent, Cursor cursor){
         this.mContext = context;
         this.mAppWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
                 AppWidgetManager.INVALID_APPWIDGET_ID);
+        mCursor = cursor;
     }
 
     @Override
@@ -34,7 +37,6 @@ public class FootballViewFactory implements RemoteViewsService.RemoteViewsFactor
 
     @Override
     public void onDataSetChanged() {
-
     }
 
     @Override
@@ -44,11 +46,13 @@ public class FootballViewFactory implements RemoteViewsService.RemoteViewsFactor
 
     @Override
     public int getCount() {
-        return 0;
+        return mCursor.getCount();
     }
 
     @Override
     public RemoteViews getViewAt(int position) {
+        Log.d("footballWidget", "Hi, here's your view for position " + position);
+
         RemoteViews row = new RemoteViews(mContext.getPackageName(), R.layout.scores_list_item);
         return row;
     }
