@@ -5,12 +5,14 @@ import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.util.Log;
+import android.os.Binder;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
 import barqsoft.footballscores.R;
+import barqsoft.footballscores.Utilities;
 import barqsoft.footballscores.service.MyFetchService;
+import static barqsoft.footballscores.ScoresAdapter.*;
 
 /**
  * Created by Nora on 10/16/2015.
@@ -20,12 +22,9 @@ public class FootballViewFactory implements RemoteViewsService.RemoteViewsFactor
 
     private Context mContext;
     private Cursor mCursor;
-    private int mAppWidgetId;
 
-    public FootballViewFactory(Context context, Intent intent, Cursor cursor){
+    public FootballViewFactory(Context context, Cursor cursor){
         this.mContext = context;
-        this.mAppWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
-                AppWidgetManager.INVALID_APPWIDGET_ID);
         mCursor = cursor;
     }
 
@@ -37,29 +36,54 @@ public class FootballViewFactory implements RemoteViewsService.RemoteViewsFactor
 
     @Override
     public void onDataSetChanged() {
+        if (null != mCursor) {
+            mCursor.close();
+        }
+
+        final long idToken = Binder.clearCallingIdentity();
+
+        mCursor = FootballRemoteViewsService.getCursorForCurrentFootballData(
+                mContext.getContentResolver()
+        );
+
+        Binder.restoreCallingIdentity(idToken);
     }
 
     @Override
     public void onDestroy() {
-
+        if (null != mCursor) {
+            mCursor.close();
+            mCursor = null;
+        }
     }
 
     @Override
     public int getCount() {
+        if (null == mCursor) {
+            return 0;
+        }
         return mCursor.getCount();
     }
 
     @Override
     public RemoteViews getViewAt(int position) {
-        Log.d("footballWidget", "Hi, here's your view for position " + position);
+        if (null == mCursor || !mCursor.moveToPosition(position)) {
+            return null;
+        }
 
-        RemoteViews row = new RemoteViews(mContext.getPackageName(), R.layout.scores_list_item);
-        return row;
+        RemoteViews remoteViewsRow = new RemoteViews(
+                mContext.getPackageName(),
+                R.layout.scores_list_item
+        );
+
+        populateRemoteViewsRowData(remoteViewsRow);
+
+        return remoteViewsRow;
     }
 
     @Override
     public RemoteViews getLoadingView() {
-        return null;
+        return new RemoteViews(mContext.getPackageName(), R.layout.scores_list_item);
     }
 
     @Override
@@ -69,12 +93,33 @@ public class FootballViewFactory implements RemoteViewsService.RemoteViewsFactor
 
     @Override
     public long getItemId(int position) {
-        return 0;
+        return position;
     }
 
     @Override
     public boolean hasStableIds() {
         return true;
+    }
+
+    private void populateRemoteViewsRowData(RemoteViews remoteViewsRow) {
+        String homeGoals = Utilities.getScores(
+                mCursor.getInt(COL_HOME_GOALS),
+                mCursor.getInt(COL_AWAY_GOALS)
+        );
+
+        String homeName = mCursor.getString(COL_HOME);
+        String awayName = mCursor.getString(COL_AWAY);
+        String date = mCursor.getString(COL_DATE);
+
+        int homeTeamCrestId = Utilities.getTeamCrestByTeamName(mCursor.getString(COL_HOME));
+        int awayTeamCrestId = Utilities.getTeamCrestByTeamName(mCursor.getString(COL_AWAY));
+
+        remoteViewsRow.setTextViewText(R.id.score_textview, homeGoals);
+        remoteViewsRow.setTextViewText(R.id.home_name, homeName);
+        remoteViewsRow.setTextViewText(R.id.away_name, awayName);
+        remoteViewsRow.setTextViewText(R.id.data_textview, date);
+        remoteViewsRow.setImageViewResource(R.id.home_crest, homeTeamCrestId);
+        remoteViewsRow.setImageViewResource(R.id.away_crest, awayTeamCrestId);
     }
 
 }
