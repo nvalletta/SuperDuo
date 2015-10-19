@@ -25,7 +25,6 @@ public class FootballAppWidgetProvider extends AppWidgetProvider {
     @Override
     public void onReceive(Context context, Intent intent) {
         super.onReceive(context, intent);
-
         AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
         int[] appWidgetIds = appWidgetManager.getAppWidgetIds(new ComponentName(context, getClass()));
         appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds, R.id.scores_list);
@@ -37,9 +36,9 @@ public class FootballAppWidgetProvider extends AppWidgetProvider {
         Intent service_start = new Intent(context, MyFetchService.class);
         context.startService(service_start);
 
-        Intent mainActivityIntent = new Intent(context, MainActivity.class);
+        for (int appWidgetId : appWidgetIds) {
+            Intent mainActivityIntent = new Intent(context, MainActivity.class);
 
-        for (int i=0; i < appWidgetIds.length; i++) {
             RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.fragment_main);
             PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, mainActivityIntent, 0);
             remoteViews.setOnClickPendingIntent(R.id.fragment_main_frame, pendingIntent);
@@ -53,7 +52,7 @@ public class FootballAppWidgetProvider extends AppWidgetProvider {
                     .getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
 
             remoteViews.setPendingIntentTemplate(R.id.scores_list, clickPendingIntent);
-            appWidgetManager.updateAppWidget(appWidgetIds[i], remoteViews);
+            appWidgetManager.updateAppWidget(appWidgetId, remoteViews);
         }
     }
 

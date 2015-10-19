@@ -9,6 +9,7 @@ import android.os.Binder;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
+import barqsoft.footballscores.MainActivity;
 import barqsoft.footballscores.R;
 import barqsoft.footballscores.Utilities;
 import barqsoft.footballscores.service.MyFetchService;
@@ -77,6 +78,8 @@ public class FootballViewFactory implements RemoteViewsService.RemoteViewsFactor
         );
 
         populateRemoteViewsRowData(remoteViewsRow);
+        Intent mainActivityIntent = new Intent(mContext, MainActivity.class);
+        remoteViewsRow.setOnClickFillInIntent(R.id.scores_item_container, mainActivityIntent);
 
         return remoteViewsRow;
     }
