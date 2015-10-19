@@ -124,6 +124,8 @@ public class ScoresProvider extends ContentProvider
         return retCursor;
     }
 
+
+
     @Override
     public Uri insert(Uri uri, ContentValues values) {
 

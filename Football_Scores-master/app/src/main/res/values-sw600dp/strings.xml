@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="share_football_scores">Share football scores with friends</string>
+    <string name="no_scores_available">No scores available.</string>
 </resources>
