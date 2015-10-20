@@ -1,7 +1,9 @@
 package it.jaschke.alexandria;
 
+import android.annotation.TargetApi;
 import android.content.Intent;
 import android.database.Cursor;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
@@ -86,6 +88,21 @@ public class BookDetailFragment extends Fragment implements LoaderManager.Loader
         );
     }
 
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private void sendShareIntentWithBookTitle(String bookTitle) {
+        if (null != shareActionProvider) {
+            Intent shareIntent = new Intent(Intent.ACTION_SEND);
+            shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+            shareIntent.setType("text/plain");
+            shareIntent.putExtra(Intent.EXTRA_TEXT, getString(R.string.share_text) + bookTitle);
+            if (null != shareIntent) {
+                shareActionProvider.setShareIntent(shareIntent);
+            }
+        }
+    }
+
+
     @Override
     public void onLoadFinished(android.support.v4.content.Loader<Cursor> loader, Cursor data) {
         if (!data.moveToFirst()) {
@@ -95,13 +112,7 @@ public class BookDetailFragment extends Fragment implements LoaderManager.Loader
         bookTitle = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.TITLE));
         ((TextView) rootView.findViewById(R.id.fullBookTitle)).setText(bookTitle);
 
-        if (null != shareActionProvider) {
-            Intent shareIntent = new Intent(Intent.ACTION_SEND);
-            shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-            shareIntent.setType("text/plain");
-            shareIntent.putExtra(Intent.EXTRA_TEXT, getString(R.string.share_text)+bookTitle);
-            shareActionProvider.setShareIntent(shareIntent);
-        }
+        sendShareIntentWithBookTitle(bookTitle);
 
         String bookSubTitle = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.SUBTITLE));
         ((TextView) rootView.findViewById(R.id.fullBookSubTitle)).setText(bookSubTitle);
